@@ -38,6 +38,7 @@ const startApolloServer = async () => {
             ApolloServerPluginDrainHttpServer({ httpServer }),
             ApolloServerPluginLandingPageGraphQLPlayground,
         ],
+        context: ({ req, res }) => ({ req, res }),
     });
 
     await apolloServer.start();
