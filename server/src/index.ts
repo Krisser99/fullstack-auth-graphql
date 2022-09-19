@@ -12,6 +12,10 @@ import {
 } from "apollo-server-core";
 import { GreetingResolver } from "./resolvers/greeting";
 import { UserResolver } from "./resolvers/user";
+import { Context } from "./types/Context";
+import refreshTokenRouter from "./routers/refreshTokenRouter";
+import cookieParser from "cookie-parser";
+import cors from "cors";
 
 const AppDataSource = new DataSource({
     type: "postgres",
@@ -27,6 +31,12 @@ const AppDataSource = new DataSource({
 const startApolloServer = async () => {
     const app = express();
 
+    app.use(cors({ origin: "http://localhost:3000", credentials: true }));
+
+    app.use(cookieParser());
+
+    app.use("/refresh_token", refreshTokenRouter);
+
     const httpServer = createServer(app);
 
     const apolloServer = new ApolloServer({
@@ -38,12 +48,15 @@ const startApolloServer = async () => {
             ApolloServerPluginDrainHttpServer({ httpServer }),
             ApolloServerPluginLandingPageGraphQLPlayground,
         ],
-        context: ({ req, res }) => ({ req, res }),
+        context: ({ req, res }): Pick<Context, "req" | "res"> => ({ req, res }),
     });
 
     await apolloServer.start();
 
-    apolloServer.applyMiddleware({ app });
+    apolloServer.applyMiddleware({
+        app,
+        cors: { origin: "http://localhost:3000", credentials: true },
+    });
 
     const PORT = process.env.PORT || 4000;
 
