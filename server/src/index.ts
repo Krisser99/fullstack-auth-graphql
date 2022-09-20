@@ -35,8 +35,6 @@ const startApolloServer = async () => {
 
     app.use(cookieParser());
 
-    app.use("/refresh_token", refreshTokenRouter);
-
     const httpServer = createServer(app);
 
     const apolloServer = new ApolloServer({
@@ -52,6 +50,8 @@ const startApolloServer = async () => {
     });
 
     await apolloServer.start();
+
+    app.use("/refresh_token", refreshTokenRouter);
 
     apolloServer.applyMiddleware({
         app,

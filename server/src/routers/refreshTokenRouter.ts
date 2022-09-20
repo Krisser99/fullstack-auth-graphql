@@ -2,7 +2,7 @@ import express, { Request, Response } from "express";
 import { Secret, verify } from "jsonwebtoken";
 import { User } from "../entities/User";
 import { UserAuthPayload } from "../types/userAuthPayload";
-import { createToken, sendRefeshToken } from "../utils/auth";
+import { createToken, sendRefreshToken } from "../utils/auth";
 
 const router = express.Router();
 
@@ -22,9 +22,13 @@ router.get("/", async (req: Request, res: Response) => {
             where: { id: decodedUser.userId },
         });
 
-        if (!existingUser) return res.status(401);
+        if (
+            !existingUser ||
+            existingUser.tokenVersion !== decodedUser.tokenVersion
+        )
+            return res.status(401);
 
-        sendRefeshToken(res, existingUser);
+        sendRefreshToken(res, existingUser);
 
         return res.json({
             success: true,

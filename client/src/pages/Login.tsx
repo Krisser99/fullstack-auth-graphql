@@ -1,8 +1,9 @@
 import { yupResolver } from "@hookform/resolvers/yup";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import * as yup from "yup";
-import { useState } from "react";
+import { useAuthContext } from "../context/AuthContext";
 import { useLoginMutation } from "../generated/graphql";
 import JwtManager from "../utils/jwt";
 
@@ -20,7 +21,7 @@ const Login = () => {
     const { register, handleSubmit } = useForm<FormData>({
         resolver: yupResolver(schema),
     });
-
+    const { setIsAuthenticated } = useAuthContext();
     const navigate = useNavigate();
     const [error, setError] = useState<string>("");
     const [login, _] = useLoginMutation();
@@ -36,6 +37,7 @@ const Login = () => {
         });
         if (response.data?.login.success) {
             JwtManager.setToken(response.data.login.accessToken as string);
+            setIsAuthenticated(true);
             navigate("..");
         } else {
             response.data?.login.message &&
